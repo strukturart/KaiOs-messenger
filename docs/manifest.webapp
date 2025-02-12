@@ -1,5 +1,5 @@
 {
-	"version":"0.1.0.58",
+	"version":"0.1.0.59",
 	"name":"flop",
 	"id":"flop",
   	"description": "Flop P2P Messenger is a decentralized messaging application that facilitates direct communication between users without relying on central servers. The app supports the exchange of text messages, audio messages, and location sharing, making it a versatile tool for staying connected. By using peer-to-peer (P2P) technology, Flop ensures that messages are transmitted directly between users, offering a seamless and reliable communication experience.",

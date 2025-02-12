@@ -97,6 +97,11 @@ if (status.debug) {
   };
 }
 
+//store previous view
+let previousView = () => {
+  status.previousView = m.route.get();
+};
+
 //sometime the key press are delayed
 let key_delay = () => {
   setTimeout(() => {
@@ -175,6 +180,7 @@ let compareUserList = (userlist) => {
 //add to addressbook
 
 let addressbook = [];
+
 localforage
   .getItem("addressbook")
   .then((e) => {
@@ -609,7 +615,6 @@ async function getIceServers() {
       document.querySelector(".loading-spinner").style.display = "none";
 
       console.log("PeerJS connected with server ID:", id);
-      side_toaster("open", 8000);
       // Zugriff auf den internen WebSocket
       if (peer.socket && peer.socket._socket) {
         peer.socket._socket.addEventListener("error", function (event) {
@@ -1594,6 +1599,8 @@ var about = {
         oncreate: () => {
           top_bar("", "", "");
 
+          setTabindex();
+
           if (status.notKaiOS)
             top_bar("<img src='assets/image/back.svg'>", "", "");
 
@@ -1608,8 +1615,6 @@ var about = {
         m(
           "button",
           {
-            tabindex: 0,
-
             class: "item",
             oncreate: ({ dom }) => {
               dom.focus();
@@ -1623,8 +1628,6 @@ var about = {
         m(
           "button",
           {
-            tabindex: 1,
-
             class: "item",
             onclick: () => {
               m.route.set("/settings_page");
@@ -1636,14 +1639,39 @@ var about = {
         m(
           "button",
           {
-            tabindex: 2,
-
             class: "item",
             onclick: () => {
               m.route.set("/privacy_policy");
             },
           },
           "Privacy Policy"
+        ),
+
+        m(
+          "button",
+          {
+            class: "item",
+            onclick: () => {
+              m.route.set("/scan");
+            },
+          },
+          "Scan"
+        ),
+
+        m(
+          "button",
+          {
+            class: "item",
+            onclick: () => {
+              let prp = prompt("Enter the chat ID");
+              if (prp !== null && prp !== "") {
+                connect_to_peer(prp);
+              } else {
+                m.route.set("/start");
+              }
+            },
+          },
+          "Enter ID"
         ),
         m("div", {
           id: "KaiOSads-Wrapper",
@@ -1861,6 +1889,7 @@ var settings_page = {
         oncreate: () => {
           bottom_bar("", "", "");
           top_bar("", "", "");
+          setTabindex();
 
           if (status.notKaiOS)
             top_bar("<img src='assets/image/back.svg'>", "", "");
@@ -1870,7 +1899,6 @@ var settings_page = {
         m(
           "div",
           {
-            tabindex: 0,
             oncreate: ({ dom }) => {
               dom.focus();
             },
@@ -1899,8 +1927,6 @@ var settings_page = {
         m(
           "div",
           {
-            tabindex: 1,
-
             class: "item input-parent  flex justify-content-spacearound",
           },
           [
@@ -1922,7 +1948,6 @@ var settings_page = {
           "button",
           {
             class: "item",
-            tabindex: 2,
             onclick: () => {
               settings.custom_peer_id = "flop-" + uuidv4(16);
               m.redraw();
@@ -1935,7 +1960,6 @@ var settings_page = {
           "button",
           {
             class: "item",
-            tabindex: 3,
             onclick: () => {
               share(
                 settings.invite_url + "?id=" + settings.custom_peer_id
@@ -1954,6 +1978,7 @@ var settings_page = {
           "button",
           {
             id: "advanced settings",
+            class: "item",
             onclick: (e) => {
               e.target.style.display = "none";
               document.querySelectorAll(".advanced-settings").forEach((e) => {
@@ -1973,8 +1998,6 @@ var settings_page = {
         m(
           "div",
           {
-            tabindex: 4,
-
             class:
               "item input-parent  flex justify-content-spacearound advanced-settings",
           },
@@ -1997,8 +2020,6 @@ var settings_page = {
         m(
           "div",
           {
-            tabindex: 5,
-
             class:
               "item input-parent  flex  justify-content-spacearound advanced-settings",
           },
@@ -2021,8 +2042,6 @@ var settings_page = {
         m(
           "div",
           {
-            tabindex: 6,
-
             class:
               "item input-parent  flex justify-content-spacearound advanced-settings",
           },
@@ -2045,8 +2064,6 @@ var settings_page = {
         m(
           "div",
           {
-            tabindex: 7,
-
             class:
               "item input-parent  flex justify-content-spacearound advanced-settings",
           },
@@ -2069,9 +2086,7 @@ var settings_page = {
         m(
           "button",
           {
-            tabindex: 8,
-
-            class: "item",
+            class: "item vip-button",
             "data-function": "save-settings",
             onclick: function () {
               settings.nickname = document.getElementById("nickname").value;
@@ -2275,7 +2290,7 @@ var options = {
           "button",
           {
             class: "item share-id-button",
-            oninit: ({ dom }) => {
+            oninit: () => {
               setTabindex();
 
               if (status.userOnline == 0) {
@@ -2314,8 +2329,8 @@ var options = {
 
 var start = {
   oninit: () => {
-    if(addressbook.length>0)m.route.set("/open_peer_menu");
     key_delay();
+    previousView();
   },
   onremove: () => {
     key_delay();
@@ -2330,7 +2345,6 @@ var start = {
         oncreate: () => {
           top_bar("", "", "");
 
-        
           document.querySelector(".loading-spinner").style.display = "none";
 
           //auto connect if id is given
@@ -2355,7 +2369,7 @@ var start = {
             });
 
           bottom_bar(
-            "<img src='assets/image/person.svg'>",
+            "",
             "<img src='assets/image/plus.svg'>",
             "<img src='assets/image/option.svg'>"
           );
@@ -2365,21 +2379,83 @@ var start = {
         m("img", {
           src: "assets/icons/intro.svg",
         }),
-        m(
-          "p",
-          {
-            class: "item scroll",
-            id: "start-text",
-            tabIndex: 0,
-            oncreate: (vnode) => {
-              document.querySelector("#start p").focus();
-              vnode.dom.focus();
-            },
-          },
-          m.trust(
-            "flop is a webRTC chat app with which you can communicate directly with someone (p2p). You can currently exchange text, images, audio and your position with your chat partner. To start chatting, press <span id='start-text-point'>enter</span>.<br><br>"
-          )
-        ),
+        addressbook.length == 0
+          ? m(
+              "p",
+              {
+                class: "item scroll",
+                id: "start-text",
+                tabIndex: 0,
+                oncreate: (vnode) => {
+                  document.querySelector("#start p").focus();
+                  vnode.dom.focus();
+                },
+              },
+              m.trust(
+                "flop is a webRTC chat app with which you can communicate directly with someone (p2p). You can currently exchange text, images, audio and your position with your chat partner. To start chatting, press <span id='start-text-point'>enter</span>.<br><br>"
+              )
+            )
+          : null,
+
+        addressbook.length > 0
+          ? m(
+              "div",
+              {
+                class: "width-100 flex justify-content-center",
+                id: "addressbook",
+                oncreate: () => {
+                  peer_is_online();
+                },
+              },
+              [
+                addressbook.map((e) => {
+                  return m(
+                    "button",
+                    {
+                      class:
+                        "item flex justify-content-center align-item-center addressbook-item",
+                      "data-id": e.id,
+                      "data-online": e.live ? "true" : "false",
+                      oncreate: () => {
+                        setTabindex();
+                      },
+                      onfocus: () => {
+                        status.addressbook_in_focus = e.id;
+                        bottom_bar(
+                          "<img src='assets/image/pencil.svg'>",
+                          "<img src='assets/image/select.svg'>",
+                          "<img src='assets/image/delete.svg'>"
+                        );
+                      },
+                      onremove: () => {
+                        status.addressbook_in_focus = "";
+                      },
+
+                      onclick: () => {
+                        if (e.live == true) {
+                          connect_to_peer(
+                            document.activeElement.getAttribute("data-id")
+                          );
+                        } else {
+                          side_toaster("user is not online", 3000);
+                        }
+                      },
+                    },
+                    [
+                      m(
+                        "span",
+                        m.trust(
+                          "<img class='online' src='/assets/image/online.svg'><img class='offline' src='/assets/image/offline.svg'>"
+                        )
+                      ),
+
+                      m("span", !e.name ? e.nickname : e.name),
+                    ]
+                  );
+                }),
+              ]
+            )
+          : null,
       ]
     );
   },
@@ -2438,7 +2514,7 @@ var open_peer_menu = {
           if (status.notKaiOS == true)
             top_bar("<img src='assets/image/back.svg'>", "", "");
         },
-      },
+      }
       /*
       chat_data_history.length > 0
         ? m(
@@ -2457,8 +2533,7 @@ var open_peer_menu = {
             "chat history"
           )
         : null,
-        */
-
+        
 
       addressbook.length == 0
         ? null
@@ -2467,13 +2542,14 @@ var open_peer_menu = {
             {
               class: "width-100 flex justify-content-center",
             },
-            [  m("img", {
-              src: "assets/icons/intro.svg",
-              class:"logo-addressbook"
-            })]
+            [
+              m("img", {
+                src: "assets/icons/intro.svg",
+                class: "logo-addressbook",
+              }),
+            ]
           ),
 
-        
       [
         addressbook.length > 0
           ? null
@@ -2562,6 +2638,8 @@ var open_peer_menu = {
               ]
             ),
       ]
+
+      */
     );
   },
 };
@@ -3428,9 +3506,16 @@ document.addEventListener("DOMContentLoaded", function (e) {
 
       case "SoftRight":
       case "Alt":
+        if (route.startsWith("/start")) {
+          m.route.set("/about");
+        }
+
+        if (route == "/start" && status.addressbook_in_focus !== "") {
+          delete_addressbook_item(status.addressbook_in_focus);
+        }
+
         if (route.startsWith("/chat?") && !status.audio_recording)
           m.route.set("/options");
-        if (route == "/start") m.route.set("/about");
 
         if (status.audio_recording && route.startsWith("/chat")) {
           audioRecorder.stopRecording().then(({ audioBlob, mimeType }) => {
@@ -3445,19 +3530,6 @@ document.addEventListener("DOMContentLoaded", function (e) {
 
         if (route.startsWith("/map_view")) {
           ZoomMap("out");
-        }
-
-        if (route == "/open_peer_menu") {
-          if (status.addressbook_in_focus == "") {
-            let prp = prompt("Enter the chat ID");
-            if (prp !== null && prp !== "") {
-              connect_to_peer(prp);
-            } else {
-              m.route.set("/open_peer_menu");
-            }
-          } else {
-            delete_addressbook_item(status.addressbook_in_focus);
-          }
         }
 
         break;
@@ -3483,7 +3555,7 @@ document.addEventListener("DOMContentLoaded", function (e) {
           });
         }
 
-        if (route == "/open_peer_menu") {
+        if (route == "/open_peer_menu" || route == "/start") {
           if (status.addressbook_in_focus != "") {
             update_addressbook_item(status.addressbook_in_focus);
           }
@@ -3507,14 +3579,6 @@ document.addEventListener("DOMContentLoaded", function (e) {
 
         if (route.startsWith("/map_view")) {
           ZoomMap("in");
-        }
-
-        if (route == "/start") {
-          m.route.set("/open_peer_menu");
-        }
-
-        if (route == "/open_peer_menu") {
-          if (status.addressbook_in_focus == "") m.route.set("/scan");
         }
 
         break;
@@ -3578,7 +3642,7 @@ document.addEventListener("DOMContentLoaded", function (e) {
           }
         }
 
-        if (route == "/start") {
+        if (route == "/start" && status.addressbook_in_focus === "") {
           create_peer();
         }
         //addressbook open peer
@@ -3725,7 +3789,7 @@ document.addEventListener("DOMContentLoaded", function (e) {
       if (m.route.get() == "/scan") {
         stop_scan();
 
-        m.route.set("/open_peer_menu");
+        m.route.set("/start");
 
         status.action = "";
       }
@@ -3883,6 +3947,11 @@ document.addEventListener("visibilitychange", function () {
     localStorage.setItem("last_connections_time", dt.toISOString());
   } else {
     let r = m.route.get();
+
+    if (r.startsWith("/start")) {
+      peer_is_online();
+    }
+
     if (r.startsWith("/chat?")) {
       let dtString = localStorage.getItem("last_connections_time");
       if (dtString) {

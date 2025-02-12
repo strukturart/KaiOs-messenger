@@ -135,10 +135,16 @@ img[src=" "] {
   z-index: 400000;
 }
 
+button.vip-button {
+  background: rgb(207, 61, 4);
+  color: white;
+  border: 0px solid gray;
+}
+
 button {
   font-size: 1rem;
   background: rgb(255, 255, 255);
-  min-width: 93%;
+  min-width: 94%;
   max-width: 90%;
 
   padding: 5px;
@@ -147,7 +153,7 @@ button {
   border-radius: 10px;
   border: 2px solid gray;
   font-weight: 700;
-  min-height: 40px;
+  height: auto;
   font-family: "Roboto" !important;
 
   touch-action: none;
@@ -162,16 +168,42 @@ button:hover {
   border: 0px solid gray;
 }
 
-button.addressbook-item {
+#addressbook button.addressbook-item {
   transition: transform 0.3s ease;
+  padding: 10px;
 }
 
-button.addressbook-item.swipe-left {
+#addressbook button.addressbook-item.swipe-left {
   transform: translateX(20%);
 }
 
-button.addressbook-item.swipe-right {
+#addressbook button.addressbook-item.swipe-right {
   transform: translateX(-20%);
+}
+
+#addressbook button.addressbook-item img {
+  width: 20px;
+  height: 20px; /* Fixiere die Höhe */
+  margin: 0;
+  padding: 0;
+  display: none; /* Falls display:none nicht erwünscht ist */
+  vertical-align: middle; /* Vertikal ausrichten */
+}
+
+#addressbook button.addressbook-item.live img.online {
+  display: block;
+}
+
+#addressbook button.addressbook-item.live img.offline {
+  display: none;
+}
+
+#addressbook button.addressbook-item img.offline {
+  display: block;
+}
+
+#addressbook button.addressbook-item:last-child {
+  margin-bottom: 50px;
 }
 
 a.button-style {
@@ -870,27 +902,6 @@ div#message-input input {
   padding: 10px;
 }
 
-#addressbook button img {
-  width: 30px;
-  display: none;
-}
-
-#addressbook button.live img.online {
-  display: inline-block;
-}
-
-#addressbook button.live img.offline {
-  display: none;
-}
-
-#addressbook button img.offline {
-  display: inline-block;
-}
-
-#addressbook button:last-child {
-  margin-bottom: 50px;
-}
-
 div#top-bar div.button-left:hover {
   cursor: pointer;
 }
@@ -915,7 +926,7 @@ div#bottom-bar div.button-center:hover {
   cursor: pointer;
 }
 
-@media screen and (min-width: 400px) and (max-width: 2000px) {
+@media screen and (min-width: 400px) and (max-width: 1500px) {
   #app {
     overflow: scroll;
     padding: 50px 0 0 0;
@@ -1035,8 +1046,10 @@ div#bottom-bar div.button-center:hover {
   }
 }
 
-.logo-addressbook{margin:0 0 20px 0;
-width:200px;}
+.logo-addressbook {
+  margin: 0 0 20px 0;
+  width: 200px;
+}
 
 @media screen and (min-width: 1500px) and (max-width: 3000px) {
   #app {
